@@ -1,1 +1,1 @@
-# androis_hardware_leeco_le_x620
+HAL and helper libraries for LeEco Le 2/Pro
