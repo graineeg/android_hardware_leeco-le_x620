@@ -29,7 +29,7 @@
 #include <pthread.h>
 #include <hardware/hardware.h>
 #include <hardware/power.h>
-#include "power-feature.h"
+//#include "power-feature.h"
 
 #define LOG_TAG "MTK PowerHAL"
 
@@ -37,20 +37,36 @@ enum {
     PROFILE_POWER_SAVE,
     PROFILE_BALANCED,
     PROFILE_HIGH_PERFORMANCE,
-    PROFILE_BIAS_POWER, 
 };
 
-#define POWER_NR_OF_SUPPORTED_PROFILES 4
+#define POWER_NR_OF_SUPPORTED_PROFILES 3
 
-#define POWER_PROFILE_PROPERTY  "sys.perf.profile"
-#define POWER_SAVE_PROP         "0"
-#define BALANCED_PROP           "1"
-#define HIGH_PERFORMANCE_PROP   "2"
-#define BIAS_POWER_PROP         "3"
+//#define POWER_PROFILE_PROPERTY  "sys.perf.profile"
+//#define POWER_SAVE_PROP         "0"
+//#define BALANCED_PROP           "1"
+//#define HIGH_PERFORMANCE_PROP   "2"
+//#define BIAS_POWER_PROP         "3"
+
+#define MT_RUSH_BOOST_PATH "/proc/hps/rush_boost_enabled"
+#define MT_FPS_UPPER_BOUND_PATH "/d/ged/hal/fps_upper_bound"
+#define CPU0_POWER_SAVE_MAX "/sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq"
+#define CPU4_POWER_SAVE_MAX "/sys/devices/system/cpu/cpu4/cpufreq/scaling_max_freq"
+#define CPU8_POWER_SAVE_MAX "/sys/devices/system/cpu/cpu8/cpufreq/scaling_max_freq"
+#define CPU0_POWER_SAVE_MIN "/sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq"
+#define CPU4_POWER_SAVE_MIN "/sys/devices/system/cpu/cpu4/cpufreq/scaling_min_freq"
+#define CPU8_POWER_SAVE_MIN "/sys/devices/system/cpu/cpu8/cpufreq/scaling_min_freq"
+#define CPU0_POWER_SAVE_GOVERNOR "/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor"
+#define CPU4_POWER_SAVE_GOVERNOR "/sys/devices/system/cpu/cpu4/cpufreq/scaling_governor"
+#define CPU8_POWER_SAVE_GOVERNOR "/sys/devices/system/cpu/cpu8/cpufreq/scaling_governor"
+#define MT_PPM_MODE_PATH "/proc/ppm/mode"
+#define MT_HPS_POWER_MODE_PATH "/proc/hps/power_mode"
+#define MT_CPUFREQ_POWER_MODE_PATH "/proc/cpufreq/cpufreq_power_mode"
+#define MT_GED_EVENT_NOTIFY_PATH "/d/ged/hal/event_notify"
+#define MT_DISPSYS_PATH "/d/dispsys"
 
 static int current_power_profile = PROFILE_BALANCED;
 
-static int sysfs_write(const char *path, char *s)
+static int power_fwrite(const char *path, char *s)
 {
     char buf[80];
     int len;
@@ -90,17 +106,39 @@ static void set_power_profile(int profile)
 
     switch (profile) {
     case PROFILE_POWER_SAVE:
-        property_set(POWER_PROFILE_PROPERTY, POWER_SAVE_PROP);
+        ALOGI("POWER_HINT_POWER_SAVING");
+            power_fwrite(MT_FPS_UPPER_BOUND_PATH, "30");
+            power_fwrite(MT_RUSH_BOOST_PATH, "0");
+            power_fwrite(MT_PPM_MODE_PATH, "low_power");
+            power_fwrite(MT_HPS_POWER_MODE_PATH, "1");
+            power_fwrite(MT_CPUFREQ_POWER_MODE_PATH, "1");
+            power_fwrite(MT_GED_EVENT_NOTIFY_PATH, "low-power-mode 1");
+            power_fwrite(MT_DISPSYS_PATH, "low_power_mode:1");
+
         break;
     case PROFILE_BALANCED:
-        property_set(POWER_PROFILE_PROPERTY, BALANCED_PROP);
+        ALOGI("POWER_HINT_BALANCE");
+            power_fwrite(MT_FPS_UPPER_BOUND_PATH, "60");
+            power_fwrite(MT_RUSH_BOOST_PATH, "1");
+            power_fwrite(MT_PPM_MODE_PATH, "performance");
+            power_fwrite(MT_HPS_POWER_MODE_PATH, "3");
+            power_fwrite(MT_CPUFREQ_POWER_MODE_PATH, "3");
+            power_fwrite(MT_GED_EVENT_NOTIFY_PATH, "low-power-mode 0");
+            power_fwrite(MT_DISPSYS_PATH, "low_power_mode:2");
         break;
     case PROFILE_HIGH_PERFORMANCE:
-        property_set(POWER_PROFILE_PROPERTY, HIGH_PERFORMANCE_PROP);
+        ALOGI("POWER_HINT_PERFORMANCE_BOOST");
+            power_fwrite(MT_FPS_UPPER_BOUND_PATH, "90");
+            power_fwrite(MT_RUSH_BOOST_PATH, "1");
+            power_fwrite(MT_PPM_MODE_PATH, "performance");
+            power_fwrite(MT_HPS_POWER_MODE_PATH, "3");
+            power_fwrite(MT_CPUFREQ_POWER_MODE_PATH, "3");
+            power_fwrite(MT_GED_EVENT_NOTIFY_PATH, "low-power-mode 0");
+            power_fwrite(MT_DISPSYS_PATH, "low_power_mode:3");
         break;
-    case PROFILE_BIAS_POWER:
-        property_set(POWER_PROFILE_PROPERTY, BIAS_POWER_PROP);
-        break;
+    //case PROFILE_BIAS_POWER:
+    //    property_set(POWER_PROFILE_PROPERTY, BIAS_POWER_PROP);
+    //    break;
     }
 
     current_power_profile = profile;
