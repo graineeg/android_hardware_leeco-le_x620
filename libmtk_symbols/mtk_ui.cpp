@@ -27,9 +27,9 @@ extern "C" {
         _ZN7android19GraphicBufferMapper4lockEPK13native_handlejRKNS_4RectEPPv(handle, static_cast<uint32_t>(usage), bounds, vaddr);
     }
 
-    /* void _ZN7android13GraphicBufferC1EjjijNSt3__112basic_stringIcNS1_11char_traitsIcEENS1_9allocatorIcEEEE(
+    void _ZN7android13GraphicBufferC1EjjijNSt3__112basic_stringIcNS1_11char_traitsIcEENS1_9allocatorIcEEEE(
             uint32_t inWidth, uint32_t inHeight, android::PixelFormat inFormat,
-            uint32_t inUsage, std::string requestorName); */
+            uint32_t inUsage, std::string requestorName);
 
 //#ifdef FRAMEWORK_NATIVE_NOT_SUPPORT_OLD_BUFFER_REQ
     void _ZN7android13GraphicBufferC1Ejjij(void *instance, uint32_t inWidth, uint32_t inHeight, android::PixelFormat inFormat, uint32_t inUsage) {
